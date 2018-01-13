@@ -1,57 +1,30 @@
-    /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-   /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-  |Am.Paint v0.03.2 -- [28.04.2017]|
-   \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-    \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
-
+    		    //
+   		   //
+Am.Paint v0.06.3 __V
 
 ==========
 =  Menu  =
 ==========
+-New: 
+create a new canvas of X pixels on Y pixels
+the values must be even.
 
--New: (crée un nouveau canevas)
-Si un canevas est déjà ouvert, il sera remplacé.
-Écrire les dimensions désirées comme suit: 32x32
-Les valeurs doivent être pairs.
+-Load:
+load a file in the folder 'Saves'
+The list of the files to show is in the file 'Saves/Files.txt'
 
--Load: (charge le projet 'name' dans le dossier '/Saves')
+-Save:
+save the project in the folder 'Saves'
 
--Save: (enregistre le projet dans le dossier '/Saves')
-ATTENTION, si un projet au nom similaire se trouve
-dans le dossier, celui-ci sera écrasé !
-
--png/txt: (exporte l'image dans le dossier '/Exports')
-ATTENTION, si une image au nom similaire se trouve
-dans le dossier, celle-ci sera écrasée !
+-Png/Txt: 
+export the image in the folder 'Exports'
 
 ============
 =  Viewer  =
 ============
-
-cliquer sur la fenêtre de visualisation permet
-de changer la couleur de fond de celle-ci.
+You can change the background color of the viewer by clicking on it.
 
 ===============
 =  Shortcuts  =
 ===============
-
--p: (outil crayon)
--e: (outil gomme)
--b: (outil sceau)
--a: (échanger les couleurs)
--s: (centrer le canevas)
--u: (annuler)
--r: (refaire)
-
--ctrl, maintenir enfoncé (pipette)
-
-===========
-=  Mouse  =
-===========
-
--gauche: (couleur 1)
--droite: (couleur 2)
--milieu: (déplacer le canevas)
-
-------------------------------------------------------
-------------------------------------------------------
+The shortcuts are defined in the file 'Shortcuts.txt'
