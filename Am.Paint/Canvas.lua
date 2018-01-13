@@ -60,6 +60,14 @@ function canvas.new(w,h)
     end
   end
   
+  function fill_color(bc,nc)
+    for r,l in ipairs(pixels) do
+      for c,p in ipairs(l) do
+        if pixels[r][c]==bc then pixels[r][c]=nc end
+      end
+    end
+  end
+  
   function set_sprite()
     local nsp = ''
     for i,r in ipairs(pixels) do
@@ -84,34 +92,33 @@ function canvas.new(w,h)
                         ^ am.translate(0,0)
                           ^ am.sprite(sprite)
                       }
-                      , am.square(0,0,scale,scale,1,vec4(0.95,0.95,0.95,1))
+                      , Cursor:node(0,0,1,1,0.1,vec4(0.95,0.95,0.95,1)):tag('norm')
                       , am.line(vec2(0,0),vec2(0,0),0,vec4(1,1,0.5,0.7))
                   }
   local wrapped = am.wrap(inner):tag"canvas"
-  
   --[[------------------------------------------------
                         **DRAW LINE**
     ------------------------------------------------]]
   function draw_line(from,target,col)
+    from = vec2(from.x-(from.x%scale),from.y-(from.y%scale)) + scale/2
+    target = vec2(target.x-(target.x%scale),target.y-(target.y%scale)) + scale/2
     local v = target - from
     local ratio = vec2(
       math.floor(v.x/scale),
       math.floor(v.y/scale)
     )
-    
-    --print('-----------------------------------')
---    print('from: ('+from.x+','+from.y+')','to: ('+target.x+','+target.y+')')
-      --print('vec: ('+v.x+','+v.y+')')
---    print('move: '.. ratio.x .. '/' .. ratio.y)
-    
-    local max = math.max(math.abs(math.ampl(ratio.x,1)),math.abs(math.ampl(ratio.y,1)))
+    local max = math.max(math.abs(ratio.x,1),math.abs(ratio.y,1))
+    max = math.ampl(max,1)
     local xm,ym = v.x/max,v.y/max
     local ids = {}
-    --print('step:  ('+xm+','+ym+')', 'x '+max)
+--   local right,up = (xm>0),(ym>0)
     for i=0,max do
       local vx,vy = from.x+(i*xm),from.y+(i*ym)
-      local ix = math.floor(vx/scale)
-      local iy = math.floor(vy/scale)
+      --if (i==math.floor(max*0.5)) then right,up = (not right),(not up) end
+      local ix = math.floor((vx)/scale)
+      local iy = math.floor((vy)/scale)
+--      local ix = right and math.floor((vx+0.2)/scale) or math.floor((vx-0.2)/scale)
+--      local iy = up and math.floor((vy+0.2)/scale) or math.floor((vy+0.2)/scale)
       local index = (1+ix+(width*0.5)) + (((height*0.5)-iy-1)*width)
       table.insert(ids,index)
     end
@@ -137,13 +144,17 @@ function canvas.new(w,h)
   function wrapped:set_scale(v)
     scale = v
     inner"scale".scale2d = vec2(v,v)
-    inner"square".scale = v
+    inner"cursor".scale = v
   end
   function wrapped:get_scale()
     return scale --inner"scale".scale2d.x
   end
   function wrapped:set_cursor(pos)
-    inner"square".x,inner"square".y = pos[1],pos[2]
+    inner"cursor".x,inner"cursor".y = pos[1],pos[2]
+  end
+  function change_cursor(t)
+    local s = (t=='size2'or t=='size3') and t or 'norm'
+    inner'cursor'.size = s
   end
   function wrapped:get_x()
     return x
@@ -180,8 +191,12 @@ function canvas.new(w,h)
   
   function wrapped:set_pixel(v)
     if brush[2] == 'size2' then
-      wrapped:set_big_pixel(v)
-      do return end
+      wrapped:set_big2_pixel(v)
+      return
+    end
+    if brush[2] == 'size3' then
+      wrapped:set_big3_pixel(v)
+      return
     end
     local r = math.floor((index-1)/width)
     local c = ((index-1)%width)+1
@@ -189,14 +204,31 @@ function canvas.new(w,h)
     set_sprite()
     inner"layer""sprite".source = sprite
   end
-  function wrapped:set_big_pixel(v)
+  function wrapped:set_big2_pixel(v)
     local r = 1+math.floor((index-1)/width)
     local c = ((index-1)%width)+1
     local points = {{r,c}}
     if r-1 > 0 then table.insert(points,{r-1,c}) end
-    if r+1 < height then table.insert(points,{r+1,c}) end
+    if r+1 <= height then table.insert(points,{r+1,c}) end
     if c-1 > 0 then table.insert(points,{r,c-1}) end
-    if c+1 < width then table.insert(points,{r,c+1}) end
+    if c+1 <= width then table.insert(points,{r,c+1}) end
+    for i,t in ipairs(points) do
+      pixels[t[1]][t[2]] = v
+    end
+    set_sprite()
+    inner"layer""sprite".source = sprite
+  end
+  function wrapped:set_big3_pixel(v)
+    local r = 1+math.floor((index-1)/width)
+    local c = ((index-1)%width)+1
+    local points = {{r,c}}
+    for ro=-2,2 do
+      for co=-2,2 do
+        if r+ro > 0 and r+ro <= height and c+co > 0 and c+co <= width then
+          table.insert(points,{r+ro,c+co})
+        end
+      end
+    end
     for i,t in ipairs(points) do
       pixels[t[1]][t[2]] = v
     end
@@ -205,11 +237,18 @@ function canvas.new(w,h)
   end
   
   function wrapped:set_bucket(v)
+    if brush[2]=='fillerase'then v='.'end
     local r = math.floor((index-1)/width)
     local c = ((index-1)%width)+1
     local old = pixels[r+1][c]
+    if brush[2]=='bycolor'then 
+      fill_color(old,v) 
+      set_sprite()
+      inner"layer""sprite".source = sprite
+      return
+    end
     pixels[r+1][c] = v
-    fill_pixels(index,old,v) 
+    fill_pixels(index,old,v)
     set_sprite()
     inner"layer""sprite".source = sprite
   end
@@ -230,14 +269,15 @@ function canvas.new(w,h)
   function wrapped:get_dim()
     return vec2(width,height)
   end
-  function wrapped:set_brush(v,s)
-    brush[1],brush[2] = v,s
+  function wrapped:set_brush(v)
+    brush[1] = v
   end
   function wrapped:get_brush()
     return brush
   end
   function wrapped:set_spec(v)
     brush[2] = v
+    change_cursor(v)
   end
   function wrapped:get_spec()
     return brush[2]
@@ -312,21 +352,21 @@ function canvas.new(w,h)
   
   wrapped:action(function(scene)
     if onGui or onSys then 
-      inner"square".hidden = true
+      inner"cursor".hidden = true
       onGui = false 
       return 
     end
     local r = scene.rect
     local mp = win:mouse_pixel_position() - vec2(win.width/2,win.height/2) - vec2(x,y)
-    inner"square".hidden = true
+    inner"cursor".hidden = true
     if math.within(r,mp) then
-      inner"square".hidden = false
-      --inner"square".color = Color.over
+      inner"cursor".hidden = false
+      --inner"cursor".color = Color.over
       local ix = math.floor(mp.x/scale)
       local iy = math.floor((mp.y)/scale)
       scene.cursor = {ix*scale,iy*scale}
       index = (1+ix+(width*0.5)) + (((height*0.5)-iy-1)*width)
-      win.scene"log".text = index
+      --win.scene"log".text = 'x: ' + mp.x + '- y: ' + mp.y 
       
       inner"line".thickness = 0
       
@@ -347,14 +387,16 @@ function canvas.new(w,h)
            brush[1] == 'eraser' then
           if win:key_pressed('lshift') then last_id = mp end
             params.line = true
-            inner"line".thickness = 3
+            inner"line".thickness = 3--scale/2
             inner"line".point1 = last_id
             inner"line".point2 = mp
           if win:mouse_released('left') then
-            draw_line(last_id,mp,Sprites.selected[1])
+            local c = (brush[1]=='eraser') and '.' or Sprites.selected[1]
+            draw_line(last_id,mp,c)
           end
           if win:mouse_released('right') then
-            draw_line(last_id,mp,Sprites.selected[2])
+            local c = (brush[1]=='eraser') and '.' or Sprites.selected[1]
+            draw_line(last_id,mp,c)
           end
         elseif brush[1] == 'bucket' then
         

@@ -100,13 +100,15 @@ function inputs.dimensions(x,y)
                           win.scene'create'.hidden = true
                           win.scene"here":append(Canvas.new(dim[1],dim[2]))
                           win.scene:replace('view',viewer.node(win.scene'canvas'.dim))
-                          select_tool('pencil')
+                          init_tools()
+                          --select_tool('pencil')
                         else
                           win.scene'create'.hidden = true
                           win.scene'here':remove('canvas')
                           win.scene"here":append(Canvas.new(dim[1],dim[2]))
                           win.scene:replace('view',viewer.node(win.scene'canvas'.dim))
-                          select_tool('pencil')
+                          init_tools()
+                          --select_tool('pencil')
                         end
                         onSys = false
                         win.scene:remove('dimensions')

@@ -10,6 +10,7 @@ function save_proj(name)
   t.dim = {x = v.x, y = v.y}
   t.colors = Sprites.selected
   t.tool = win.scene"canvas".brush
+  t.icsels = icons.sels
   local vc = win.scene'view''back'.color
   t.view = {color = {vc.r,vc.g,vc.b,vc.a},
             state = win.scene'view''box'.hidden }
@@ -19,7 +20,8 @@ function save_proj(name)
   f:close()
   local record = io.open('Saves/Files.txt','a+')
   local names = record:read '*a'
-  local new = string.find(names,name .. "\n")
+  local new = names:find(name .. "\n")
+  new = names:find(name)
   if new then else record:write("\n" .. name) end
   record:close()
 end
@@ -65,6 +67,7 @@ function load_proj(name)
   win.scene"canvas".undos = l.undos
   win.scene"canvas".name = name
   win.scene"canvas".brush = l.tool
+  if l.icsels then icons.sels = l.icsels end
   local tool = type(l.tool[1]) == "table" and l.tool[1][1] or l.tool[1]
   select_tool(tool)
 end
@@ -111,12 +114,12 @@ function menu.node()
                             "Load",
                             function()
                               local files = {}
-                              for line in io.lines("Saves/Files.txt") do 
-                                files[#files + 1] = line
+                              for line in io.lines("Saves/Files.txt") do
+                                --print(line)
+                                if line then files[#files + 1] = line end
                               end
                               win.scene:append(
                                 Inputs.choice(win.left+60,win.top-5,files,load_proj)
-                                --Inputs.name(win.left+60,win.top-5,load_proj)
                               )
                             end)
                   , am.translate(win.left+90,win.top-10) 

@@ -8,30 +8,17 @@ meta.__mul = function(a,b)
   return string.rep(a,b)
 end
 meta.__index = function(a,b)
-  if type(b) ~= "number" then
-    return string[b]
-  end
+  if type(b) ~= "number" then return string[b] end
   return a:sub(b,b)
 end
 
 function wrap(str, limit)
   limit = limit or 72
   local here = 2
-  return str:gsub("(.)()",
-            function(l, n)
-              if n-here == limit then
-                here = n
-                return "\n"..l
-              end
-            end)
+  return str:gsub("(.)()",function(l, n) if n-here == limit then here = n return "\n"..l end end)
 end
 
-function bounds(window)
-  return vec4(-window.pixel_width*0.5,
-              -window.pixel_height*0.5,
-              window.pixel_width*0.5,
-              window.pixel_height*0.5)
-end
+function bounds(window)local w,h = window.pixel_width,window.pixel_height return vec4(-w*0.5,-h*0.5,w*0.5,h*0.5)end
 function t_to_s(t) local s = [[]] for i,v in pairs(t) do s =s .. tostring(v) end return s end
 function s_to_t(s) local t = {} for w in string.gmatch(s,"[a-zA-Z.0-9]+") do table.insert(t,w) end return t end
 function math.between(min,v,max) if v>min and v<max then return true else return false end end
@@ -41,16 +28,7 @@ function math.trint(n)local i,f=math.modf(n) return f<0.5 and math.floor(n) or m
 function math.round(n, deci) deci = 10^(deci or 10) return math.floor(n*deci+.5)/deci end
 function math.clamp(low, n, high) return math.min(math.max(low, n), high) end
 function math.rsign() return love.math.random(2) == 2 and 1 or -1 end
-function math.within(rect,pos)
-  if pos.x > rect.r and
-     pos.x < rect.b and
-     pos.y > rect.g and
-     pos.y < rect.a then
-    return true
-  else
-    return false
-  end
-end
+function math.within(rect,pos) if pos.x>rect.r and pos.x<rect.b and pos.y>rect.g and pos.y<rect.a then return true else return false end end
 function printTable(t) p='' for k,v in ipairs(t) do p=''..p ..k ..": " ..v .."\n" end print(p) end
 
 function am.square(x,y,w,h,thickness,color)
@@ -62,7 +40,7 @@ function am.square(x,y,w,h,thickness,color)
           vec2(x+width,y+height),
           vec2(x+width,y)}
   end
-                
+  
   local inner = am.translate(0,0)
                 ^ am.group()
                   ^ {am.line(points()[1],points()[2],thickness,color),
@@ -109,7 +87,6 @@ function am.square(x,y,w,h,thickness,color)
       child.color = v
     end
   end
-     
   wrapped:action(coroutine.create(function(node)
         while true do
             am.wait(am.delay(0.4))
@@ -118,16 +95,15 @@ function am.square(x,y,w,h,thickness,color)
             node.color = vec4(1,1,1,1)
         end
     end))
-     
   return wrapped
 end
 
 win = am.window{
-    title = "Am.Paint v0.03.2",
+    title = "Am.Paint v0.06.3",
     width = 960,
-    height = 720,
-    resizable = true,
-    letterbox = false
+    height = 700,
+    --resizable = false,
+    --letterbox = false
 }
 
 onGui = false
@@ -137,7 +113,7 @@ onAct = false
 Cuts = require "Shortcuts"
 Parser = require "INIParser"
 Maps = require "ColorMaps"
-Canvas = require "Canvas"
+Cursor = require "Cursor"
 Sprites = require "Sprites"
 Color = require "Color"
 GUI = require "GUI"
@@ -146,31 +122,7 @@ Icons = require "Icons"
 Viewer = require "View"
 Palette = require "Palette"
 Menu = require "Menu"
-
-local colors = am.translate(win.left+21,win.bottom+31)
-              ^ am.group():tag"colors"
-                ^ {
-                  am.group()
-                  ^ { am.translate(0,0) ^ am.rect(-17,-17,17,17,Color.white)
-                    , am.translate(10,-10) ^ am.rect(-17,-17,17,17,Color.white)
-                    , am.translate(0,0) ^ am.rect(-16,-16,16,16,Color.black)
-                    , am.translate(10,-10) ^ am.rect(-16,-16,16,16,Color.black)
-                    }
-                ,
-                  am.group()
-                  ^ { am.translate(10,-10)
-                      ^ am.scale(5) ^ am.sprite(Sprites:textured("void",3,3))
-                    , am.translate(10,-10)
-                      ^ am.rect(-15,-15,15,15,Color.white):tag"selected2"
-                    }
-                ,
-                am.group()
-                  ^ { am.translate(0,0)
-                      ^ am.scale(5) ^ am.sprite(Sprites:textured("void",3,3))
-                    , am.translate(0,0)
-                      ^ am.rect(-15,-15,15,15,Color.white):tag"selected1"
-                    }
-                }
+Canvas = require "Canvas"
 
 win.scene = am.group()
             ^ {
@@ -181,7 +133,7 @@ win.scene = am.group()
                       vec4(0.1,0.1,0.1,1))
               , am.text("Create a\nnew canvas",vec4(0.5,0.5,0.5,1)):tag'create'
               , am.group():tag"here"
-              , colors
+              , Color.node
               , Palette.node()
               , Menu.node()
               , Icons.node()

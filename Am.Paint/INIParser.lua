@@ -24,7 +24,7 @@ function validINIkey(t) if table.search(Parser.valids,t) then return true else r
 function validINIvalue(t) if table.search(Parser.keys,t) then return true else return false end end
 
 function Parser:readINI()
-  local f = io.open('SHORTCUTS.ini','r+')
+  local f = io.open('SHORTCUTS.txt','r+')
   for line in f:lines() do
     if line == '' or line[1] == '[' then else
       self:parseINI(line)
