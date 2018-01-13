@@ -1,10 +1,10 @@
-# Am.Paint
+ # Am.Paint
 A drawing tool in **LUA** made with the [Amulet Framework](http://www.amulet.xyz/)
 
 Availables features:
-- Pencil
-- Eraser
-- Bucket
+- Pencil (3 sizes)
+- Eraser (3 sizes)
+- Bucket (normal,by color)
 - Lines
 - Move
 - Undo/Redo
