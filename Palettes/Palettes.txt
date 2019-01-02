@@ -1,0 +1,4 @@
+SNES
+tv
+full
+gray
