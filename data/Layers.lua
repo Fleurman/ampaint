@@ -1,13 +1,5 @@
 Layers = ...
 
---[[
-
------------------------------------------------
-V 09
-  [ ] Layer naming
-  [ ] scroll window
-
-]]
 Layers.count = 1
 Layers.selected = 1
 Layers.bank = am.group():tag('layers')
@@ -89,6 +81,17 @@ local function layerNode(i,args)
   function wrapped:get_visible()
     return visible
   end
+  function wrapped:set_name(v)
+    name = v
+    node'text'.text = v
+  end
+  function wrapped:get_name()
+    return name
+  end
+  function wrapped.rename(n)
+    wrapped:set_name(n)
+    win.scene'canvas'.datas()[id].name = n
+  end
   wrapped:action(function(nod)
     if onAct or onSys then return end
     local mouse_pos = win:mouse_position()
@@ -102,6 +105,14 @@ local function layerNode(i,args)
 --        nod.selected = true
 --        Layers.actif = nod
         --wrapped:set_selected(true)
+      elseif win:mouse_pressed"right" and
+      math.within(vec4(mv.x-25,mv.y-32,mv.x+70,mv.y+0),mouse_pos) then
+          local pos = vec2(mv.x-60,mv.y+10)
+          local args = {
+            placeholder = 'name',
+            default = name or ''
+          }
+          win.scene:append(Inputs.name(pos,args,nod.rename))
       end
     else
       node'back'.color = vec4(0.8,0.8,0.8,1)
@@ -122,6 +133,14 @@ function Layers:selectLayer(id)
   end
   if win.scene'canvas' then win.scene'canvas'.layer = id end
   --print("Selected : "..Layers.selected)
+end
+function Layers:selectUpperLayer()
+  local id = math.max(1,Layers.selected-1)
+  Layers:selectLayer(id)
+end
+function Layers:selectBottomLayer()
+  local id = math.min(Layers.selected+1,Layers.bank.num_children)
+  Layers:selectLayer(id)
 end
 
 function Layers:addLayer()

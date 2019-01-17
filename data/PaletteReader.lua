@@ -1,10 +1,3 @@
-table.map = function( tab, fn )
-    for i,v in ipairs(tab) do
-        tab[i] = fn(v)
-    end
-    return tab
-end
-
 function group( t, g )
     local new = {}
     local item = {}
@@ -12,7 +5,7 @@ function group( t, g )
     for index, value in ipairs(t) do
         table.insert(item,value)
         if(index%g==0) then
-            table.insert(new, table.shallow_copy( table.map(item,function(v) return v/255.0 end) ))
+            table.insert(new, table.shallow_copy( table.map(item,function(v) return math.round(v/255.0)end) ))
             item = {}
             counter = counter + 1
         end
@@ -20,7 +13,7 @@ function group( t, g )
     return new
 end
 
-function toMap(tab,name)
+function toMap(tab)
     local chars = string.reverse('CBAFEDIHGLKJONMRQPUTSXWVaZYdcbgfejihmlkponsrqvut')
     local map = {
         w = vec4(0.4,0.4,0.4,1),
@@ -31,33 +24,28 @@ function toMap(tab,name)
     local c = 1
 
     for index, value in ipairs(tab) do
-        map[chars[c]]  = vec4(unpack(value))
+        map[chars[c]]  = vec4(unpack(value)){a=1}
         c = c+1
     end
     
     am.ascii_color_map = map
-    
-    --print(table.tostring(map))
     
     return map
 end
 
 function readPalette(name)
     local buff = am.load_image(ROOT..'Palettes/'..name..'.png')
-    if not buff then
-      
-    else
-      local view = buff.buffer:view('ubyte')
+    local view = buff.buffer:view('ubyte')
 
-      local values = {}
-      for i=1,#view do
-          table.insert(values,view[i])
-      end
-
-      local map = group(values, 4)
-      
-      return toMap(map)
+    local values = {}
+    for i=1,#view do
+      table.insert(values,view[i])
     end
-end
 
-readPalette('SNES')
+    local map = group(values, 4)
+    
+    return toMap(map)
+end
+if io.exists(ROOT..'Palettes/SNES.png') then
+  readPalette('SNES')
+end

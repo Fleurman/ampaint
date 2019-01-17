@@ -3,7 +3,11 @@ local Color = ...
 Color.red = vec4(0.8, 0.2, 0, 1)
 Color.yellow = vec4(0.8, 0.9, 0, 1)
 Color.white = vec4(1, 1, 1, 1)
+Color.whitesmoke = vec4(0.94, 0.94, 0.94, 1)
 Color.black = vec4(0, 0, 0, 1)
+Color.grey = vec4(0.5, 0.5, 0.5, 1)
+Color.dimgrey = vec4(0.3, 0.3, 0.3, 1)
+Color.lightgrey = vec4(0.8, 0.8, 0.8, 1)
 Color.over = vec4(0.9, 0.9, 0.9, 1)
 Color.pressed = vec4(0.7, 0.7, 0.7, 1)
 

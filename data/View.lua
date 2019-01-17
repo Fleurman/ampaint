@@ -35,7 +35,7 @@ function viewer.node(arg)
                         ^ {am.rect((-dim.x/2)-2, -dim.y/2, (dim.x/2)+2, (dim.y/2)+2)
                           , am.rect((-dim.x/2)-1, -dim.y/1, (dim.x/2)+1, (dim.y/2)+1, Color.black)
                           , bt(win.right-(dim.x/2)-26, win.bottom+dim.y/2, dim.x,dim.y)
-                          , am.scale(1) ^ am.sprite(Sprites.drawing)
+                          , am.scale(1) ^ am.rotate(math.rad(180), vec3(1, 0, 0)) ^ am.sprite(Sprites.drawing)
                         },
                     }
                     ,

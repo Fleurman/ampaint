@@ -11,15 +11,18 @@ Cuts.data = {
   tiles={'t'},
   save={'ctrl','s'},
   export={'ctrl','e'},
-  colorpicker={'ctrl'},
+  colorpicker={'lctrl'},
   undo={'ctrl','left'},
   redo={'ctrl','right'},
   saveas={'ctrl','alt','s'},
   exportas={'ctr','alt','e'},
-  deleteall={'ctrl','shift','d'},
+  delete={'delete'},
+  upperlayer={'pageup'},
+  bottomlayer={'pagedown'},
 }
 
 function Cuts:active(key)
+  if not self.data[key] then return nil end
   local bool = true
   for k,v in ipairs(self.data[key]) do
     if #win:keys_down() > #self.data[key] then bool=nil return end
@@ -33,6 +36,7 @@ function Cuts:active(key)
 end
 
 function Cuts:down(k)
+  if not self.data[k] then return nil end
   local bool = true
   for k,v in ipairs(self.data[k]) do
     if v=='ctrl' or v=='alt' or v=='shift' then
@@ -43,3 +47,4 @@ function Cuts:down(k)
   end
   return bool
 end
+

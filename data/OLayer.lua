@@ -1,14 +1,6 @@
 OLayer = ...
 OLayer.__index = OLayer
 
-function blankData(w,h)
-    local row = {}
-    for i=1,w do table.insert(row,'.') end
-    local tab = {}
-    for i=1,h do table.insert(tab,table.shallow_copy(row)) end
-    return tab
-end
-
 function OLayer:new(w,h)
   local o = {}
   setmetatable(o,OLayer)
@@ -18,7 +10,8 @@ function OLayer:new(w,h)
   o.locked = false
   o.level = 1
   o.name = 'layer ' .. Layers.count
-  o.data = blankData(w,h)
+  o.data = am.buffer(w*h):view('ubyte')
+  o.opacity = 0.5
   return o
 end
 function OLayer:create(w,h,t)
@@ -30,7 +23,8 @@ function OLayer:create(w,h,t)
   o.visible = t.visible
   o.locked = t.locked
   o.name = t.name
-  o.data = t.data
+  --print(table.tostring(t.data))
+  o.data = am.ubyte_array(t.data)
   return o
 end
 function OLayer:toTable()
@@ -39,7 +33,7 @@ function OLayer:toTable()
       --height = self.height
       visible= self.visible,
       locked= self.locked,
-      data= self.data,
+      data= table.fromView(self.data),
       name = self.name,
       level = self.level,
       selected = Layers.selected == self.level
@@ -47,12 +41,11 @@ function OLayer:toTable()
 end
 
 function OLayer:empty()
-  self.data = blankData(self.width,self.height)
+  self.data:set(string.byte('.'))
 end
 
 function OLayer:sprite()
   if not self.visible then return [[..\n..]] end
-  --if self.memo then return self.memo end
   local nsp = ''
   for i,r in ipairs(self.data) do
     local tl = ''
@@ -74,42 +67,40 @@ function OLayer:crossTargets(id)
 end
 function OLayer:getXY(id) return math.floor((id-1)/self.width),((id-1)%self.width)+1 end
 function OLayer:get(id)
-  local r,c = self:getXY(id)
-  return self.data[r+1][c]
+  return string.char(self.data[id])
 end
 function OLayer:setPixel(id,v)
-  --print(self,self.data)
   if self.locked then return end
-  local r,c = self:getXY(id)
-  self.data[r+1][c] = v
-  self.memo = nil
+  self.data[id] = string.byte(v)
 end
 function OLayer:setCross(id,v)
   if self.locked then return end
   local r,c = self:getXY(id)
   r=r+1
-  local points = {{r,c}}
-  if r-1 > 0 then table.insert(points,{r-1,c}) end
-  if r+1 <= self.height then table.insert(points,{r+1,c}) end
-  if c-1 > 0 then table.insert(points,{r,c-1}) end
-  if c+1 <= self.width then table.insert(points,{r,c+1}) end
-  for i,t in ipairs(points) do 
-    self.data[t[1]][t[2]] = v
+  local ids = {[1]=id}
+  if r-1 > 0 then table.insert(ids,id-self.width) end
+  if r+1 <= self.height then table.insert(ids,id+self.width) end
+  if c-1 > 0 then table.insert(ids,id-1) end
+  if c+1 <= self.width then table.insert(ids,id+1) end
+  for i,t in ipairs(ids) do
+    self.data[t] = string.byte(v)
   end
-  self.memo = nil
 end
 function OLayer:setSquare(id,v)
   if self.locked then return end
   local r,c = self:getXY(id)
-  local points = {{r,c}}
+  r=r+1
+  local points = {id}
   for ro=-2,2 do
     for co=-2,2 do
       if r+ro > 0 and r+ro <= self.height and c+co > 0 and c+co <= self.width then
-        table.insert(points,{r+ro,c+co})
+        table.insert(points,id+(ro*self.width)+co)
       end
     end
   end
-  for i,t in ipairs(points) do self.data[t[1]][t[2]] = v end
+  for i,t in ipairs(points) do 
+    self.data[t] = string.byte(v)
+  end
   self.memo = nil
 end
 
@@ -145,10 +136,50 @@ function OLayer:fillErase(id)
 end
 
 function OLayer:fillByColor(old,new)
+  old = string.byte(old)
   if self.locked then return end
-  for r,l in ipairs(self.data) do
-    for c,p in ipairs(l) do 
-      if self.data[r][c]==old then self.data[r][c]=new end 
-    end
+  for i=1,#self.data do
+    if self.data[i]==old then self.data[i]=string.byte(new) end
   end
 end
+
+function OLayer:drawLineSquare(id1,id2,c)
+  local row1,col1 = self:getXY(id1)
+  local row2,col2 = self:getXY(id2)
+  local row,col = row2-row1,col2-col1
+  --print('DATA:',id1,id2,row1,col1,row2,col2,row,col)
+  for i=1,math.abs(col) do
+    local v = i*math.value(col)
+    --print('ITER ROW:',v)
+    self.data[id1+v] = string.byte(c)
+    self.data[id1+(row*self.width)+v] = string.byte(c)
+  end
+  for i=1,math.abs(row) do
+    local v = i*math.value(row)
+    --print('ITER COL:',v)
+    self.data[id1+(v*self.width)] = string.byte(c)
+    self.data[id1+(v*self.width)+col] = string.byte(c)
+  end
+  self.data[id1] = string.byte(c)
+  
+end
+
+function OLayer:drawFullSquare(id1,id2,color)
+  local row1,col1 = self:getXY(id1)
+  local row2,col2 = self:getXY(id2)
+  local row,col = row2-row1,col2-col1
+  --print('DATA:',id1,id2,row1,col1,row2,col2,row,col)
+  for c=0,math.abs(col) do
+    local cv = c*math.value(col)
+    for r=0,math.abs(row) do
+      local rv = r*math.value(row)
+      
+      self.data[id1+(rv*self.width)+cv] = string.byte(color)
+      
+    end
+  end
+  self.data[id1] = string.byte(color)
+  
+end
+
+

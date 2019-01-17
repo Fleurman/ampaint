@@ -60,10 +60,11 @@ function Palette.node()
                   Src.flatButton(),
                   Src.gui.hamburger.small,
                   function()
-                    local files = {}
-                    for line in io.lines("Palettes/Palettes.txt") do
-                      if line then files[#files + 1] = line end
-                    end
+                    local files = table.map(am.glob{"Palettes/*.png", "Palettes/*.jpg"},
+                      function(s)
+                        return string.match(s,".*/(.+)%..+")
+                      end)
+                    --print(table.tostring(files))
                     win.scene:append( Inputs.choice(
                       win.left+52,win.bottom+314,files,setPalette,8) )
                   end

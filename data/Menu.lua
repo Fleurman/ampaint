@@ -31,7 +31,6 @@ IMPORT:
                                 **SAVE A PROJECT**
 ----------------------------------------------------------------------------------]]
 function save_proj(name)
-  win.scene:append( GUI.log('Saved as \'' .. name .. '.ampt\'') )
   local t = {}
   t.version = VERSION
   t.name = name
@@ -58,14 +57,13 @@ function save_proj(name)
   local f = io.open('Saves/' .. name .. '.ampt','w+')
   f:write(js)
   f:close()
-  local record = io.open('Saves/Files.txt','a+')
-  local names = record:read '*a'
-  local new = names:find(name .. "\n")
-  new = names:find(name)
-  if new then else 
-	  record:write("\n" .. name)
-  end
-  record:close()
+--  local record = io.open('Saves/Files.txt','a+')
+--  local names = record:read '*a'
+--  local new = names:find(name .. "\n")
+--  new = names:find(name)
+--  if new then else record:write("\n" .. name) end
+--  record:close()
+  win.scene:append( GUI.log('Saved as \'' .. name .. '.ampt\'') )
   
 end
 
@@ -96,7 +94,7 @@ function verifyFiles()
   end
   record:close()
 end
-verifyFiles()
+--verifyFiles()
 
 function loadOld(data)
   data.name = data.name or getName()
@@ -104,10 +102,12 @@ function loadOld(data)
   if win.scene'canvas' then
     win.scene'here':remove('canvas')
   end
+  local buff = table.map(table.iflatten(Palette:transformOldNes(data.table)),function(v) return string.byte(v) end)
+  --print(table.tostring(buff))
   local LayerData = {
     visible= true,
     locked= false,
-    data= Palette:transformOldNes(data.table),
+    data= buff,
     name = 'layer 1',
     level = 1,
     selected = true
@@ -196,12 +196,15 @@ function export(name)
   win.scene"canvas".name = name
   local dim = win.scene"canvas".dim
   local img = am.image_buffer(dim.x,dim.y)
-  local dummy = win.scene"canvas".dummy
-  local spr = dummy.line .. '\n' .. win.scene"canvas".sprite
-  local texture = am.sprite(spr).spec.texture
-  local buff = am.framebuffer(texture)
-  buff:read_back()
-  local image = texture.image_buffer
+  
+  local data = table.fromView(win.scene"canvas".view)
+  data = table.group(data,dim.x*4)
+  table.horizontalFlip(data)
+  
+  local view = am.ubyte_array(table.iflatten(data))
+  local buff = view.buffer
+  local image = am.image_buffer(buff,dim.x,dim.y)
+  
   img:paste(image,1,1)
   img:save_png(ROOT..'Exports/' .. name .. '.png')
   img = nil
@@ -227,10 +230,10 @@ function menu.node()
                                active=Src.buttons.small.active},
                               Src.file.open,
                               function()
-                                local files = {}
-                                for line in io.lines("Saves/Files.txt") do
-                                  if line then files[#files + 1] = line end
-                                end
+                                local files = table.map(am.glob{"Saves/*.ampt"},
+                                function(s)
+                                  return string.match(s,".*/(.+)%..+")
+                                end)
                                 win.scene:append( Inputs.choice(
                                   win.left+30,win.top-20,files,load_proj) )
                               end),
@@ -241,9 +244,12 @@ function menu.node()
                               Src.file.save,
                               function()
                                 if win.scene'canvas' then
-                                  win.scene:append(
-                                    Inputs.name(win.left+55,win.top-22,save_proj)
-                                  )
+                                    local pos = vec2(win.left+55,win.top-22)
+                                    local args = {
+                                      placeholder = 'name',
+                                      default = win.scene'canvas'.name or ''
+                                    }
+                                  win.scene:append(Inputs.name(pos,args,save_proj))
                                 end
                               end),
                 GUI.imgbutton(win.left+91,win.top-16,
@@ -253,9 +259,12 @@ function menu.node()
                               Src.export,
                               function()
                                 if win.scene'canvas' then
-                                  win.scene:append(
-                                    Inputs.name(win.left+80,win.top-22,export)
-                                  )
+                                    local pos = vec2(win.left+80,win.top-22)
+                                    local args = {
+                                      placeholder = 'name',
+                                      default = win.scene'canvas'.name or ''
+                                    }
+                                  win.scene:append(Inputs.name(pos,args,export))
                                 end
                               end),
                 GUI.imgbutton(win.left+116,win.top-16,
@@ -265,8 +274,12 @@ function menu.node()
                               Src.txt,
                               function()
                                 if win.scene'canvas' then
-                                  win.scene:append( Inputs.name(
-                                      win.left+105,win.top-22,save_txt) )
+                                  local pos = vec2(win.left+105,win.top-22)
+                                    local args = {
+                                      placeholder = 'name',
+                                      default = win.scene'canvas'.name or ''
+                                    }
+                                    win.scene:append(Inputs.name(pos,args,save_txt))
                                 end
                               end)
                             }

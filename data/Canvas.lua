@@ -4,19 +4,22 @@ local canvas = ...
                                 **TILES**
 ----------------------------------------------------------------------]]
 local function tiles(w,h,spr)
+  --spr = '..\n..'
   local state = false
   local inner = am.group()
-                ^ { am.translate(-w,-h) ^ am.sprite(spr),
-                    am.translate(0,-h) ^ am.sprite(spr),
-                    am.translate(w,-h) ^ am.sprite(spr),
-                    am.translate(w,0) ^ am.sprite(spr),
-                    am.translate(w,h) ^ am.sprite(spr),
-                    am.translate(0,h) ^ am.sprite(spr),
-                    am.translate(-w,h) ^ am.sprite(spr),
-                    am.translate(-w,0) ^ am.sprite(spr) }
-  for i,c in inner'group':child_pairs() do c'sprite'.color = vec4(1,1,1,0.9) end
+                ^ { am.translate(-w,-h) ^ spr,
+                    am.translate(0,-h) ^ spr,
+                    am.translate(w,-h) ^ spr,
+                    am.translate(w,0) ^ spr,
+                    am.translate(w,h) ^ spr,
+                    am.translate(0,h) ^ spr,
+                    am.translate(-w,h) ^ spr,
+                    am.translate(-w,0) ^ spr }
+  --inner'group'.color = vec4(1,1,1,0.9)
   local wrapped = am.wrap(inner):tag('tiles')
-  function wrapped:set_sprite(v) for i,c in inner'group':child_pairs() do c'sprite'.source = v end end
+  function wrapped:set_sprite(v) 
+    --for i,c in inner'group':child_pairs() do c'sprite'.source = v end 
+  end
   function wrapped:set_state(v) state = v wrapped:refresh() end
   function wrapped:refresh() for i,c in inner'group':child_pairs() do c.hidden = (not state) end end
   wrapped:refresh()
@@ -50,28 +53,56 @@ function canvas.new(w,h,init)
     dummy.line = dummy.line .. '.'
   end
   
+  
+  local buff = am.buffer(4*width*height)
+  buff.usage = "dynamic"
+  local view = buff:view('ubyte')
+  view:set(0)
+  local image = am.image_buffer(buff,width,height)
+  local texture = am.texture2d(image)
+  local spec = {texture= texture,s1= 0,t1= 0,s2= 1,t2= 1,x1= 0,y1= 0,x2= width,y2= height,width= width,height= height,}
+  local dsprite = am.rotate(math.rad(180), vec3(1, 0, 0)) ^ am.sprite(spec)
+  win.scene'view''sprite'.source = spec
+  
+  function blankData(w,h)
+    local tab = {}
+    for i = 1,(w*h) do
+      table.insert(tab,'.')
+    end
+    return tab
+  end
   ----------------------------------------------------------------------
   function flat_sprite()
     
     local tmpa = blankData(width,height)
     
+    view:set(0)
+            
     for i = 1,#pixels do
       --print('LAYER '.. i .. ' :','\n'..toSprite(pixels[i].data),'\n',pixels[i].data)
       if pixels[i].visible then
-        if tmpa == nil then 
-          tmpa = table.deep_copy(pixels[i].data)
-        else
-          for r,l in pairs(pixels[i].data) do
-            for c,p in pairs(l) do
-              if not(p=='.') then
-                tmpa[r][c] = p 
-              end
-            end 
-          end
+        
+        for d = 1,(width*height) do
+            local char = string.char(pixels[i].data[d])
+            --tmpa[d] = char
+            local vc = ((d-1)*4)+1
+            --print( vc )
+            if(am.ascii_color_map[char]) then
+              local dat = am.ascii_color_map[char] or vec4(0)
+              dat = dat*255
+  --            local oldvec = vec4(view[vc],view[vc+1],view[vc+2],view[vc+3])
+  --            local newvec = oldvec+(dat*pixels[i].opacity)
+  --            view:set({newvec.r,newvec.g,newvec.b,newvec.a},vc,4)
+
+              view:set({dat.r,dat.g,dat.b,dat.a},vc,4)
+            end
         end
+        
       end
     end
     
+    tmpa = table.group(tmpa,width)
+      
     if tmpa == nil then
       sprite = string.padLeft('',width,'.')
     else
@@ -108,13 +139,14 @@ function canvas.new(w,h,init)
                 ^ { am.scale(scale):tag"scale"
                     ^ {
                       am.sprite(Sprites:textured("void",width,height))
-                      , tiles(width,height,flat)
+                      , tiles(width,height,dsprite)
                       , am.group():tag"layers"
-                        --^ { am.translate(0,0):tag('l1') ^ am.group() ^ am.sprite(flat) }
-                      , am.sprite('..\n..'):tag('view')
+                      --, am.sprite('..\n..'):tag('view')
+                      , dsprite
                       }
                       , Cursor:node(0,0,1,1,0.1,vec4(0.95,0.95,0.95,1)):tag('norm')
                       , am.line(vec2(0,0),vec2(0,0),0,vec4(1,1,0.5,0.7))
+                      , am.square(0,0,0,0,scale-6,vec4(1,1,0.5,0.7),false):tag('form')
                   }
   local wrapped = am.wrap(inner):tag"canvas"
   
@@ -165,9 +197,10 @@ function canvas.new(w,h,init)
   ----------------------------------------------------------------------
   function refresh()
     flat_sprite()
-    inner"view".source = flat
-    inner"tiles".sprite = flat
-    win.scene'view''sprite'.source = flat
+    --inner"view".source = flat
+    --inner"tiles".sprite = flat
+    --win.scene'view''sprite'.source = flat
+    win.scene'view''sprite'.source = spec
   end
   
   function wrapped:redraw()
@@ -202,10 +235,10 @@ function canvas.new(w,h,init)
       local index = (1+ix+(width*0.5)) + (((height*0.5)-iy-1)*width)
       table.insert(ids,index)
     end
-    for i,v in ipairs(ids) do 
-      local r = 1+math.floor((v-1)/width)
-      local c = ((v-1)%width)+1
-      if r <= width and c <= height then pixels[layer].data[r][c] = col end 
+    for i,v in ipairs(ids) do
+        if v > 0 and v <= (width*height) then
+        pixels[layer].data[v] = string.byte(col) 
+      end
     end
     refresh()
   end
@@ -237,6 +270,10 @@ function canvas.new(w,h,init)
   function wrapped:get_sprite() flat_sprite() return sprite end
   ----------------------------------------------------------------------
   function wrapped:get_dummy() setDummy() return dummy end
+  ----------------------------------------------------------------------
+  function wrapped:get_image_buffer() return image end
+  ----------------------------------------------------------------------
+  function wrapped:get_view() return view end
   ----------------------------------------------------------------------
   function wrapped:get_flatten() return flat_sprite() end
   ----------------------------------------------------------------------
@@ -272,9 +309,7 @@ function canvas.new(w,h,init)
   end
   ----------------------------------------------------------------------
   function get_pixel(id)
-    local r = math.floor((id-1)/width)
-    local c = ((id-1)%width)+1
-    return pixels[layer].data[r+1][c]
+    return string.char(pixels[layer].data[id])
   end
   ----------------------------------------------------------------------
   function wrapped:set_pixel(v)
@@ -293,7 +328,8 @@ function canvas.new(w,h,init)
     if brush[2]=='fillerase'then v='.'end
     local r = math.floor((index-1)/width)
     local c = ((index-1)%width)+1
-    local old = pixels[layer].data[r+1][c]
+    --local old = pixels[layer].data[r+1][c]
+    local old = string.char(pixels[layer].data[index])
     if brush[2]=='bycolor'then 
       pixels[layer]:fillByColor(old,v) 
       refresh()
@@ -365,24 +401,28 @@ function canvas.new(w,h,init)
   end
   ----------------------------------------------------------------------
   function displace(x,y)
+    
+    local data = table.group(table.fromView(pixels[layer].data),width)
+    
     if y > 0 then
-      local l = table.remove(pixels[layer].data,#pixels[layer].data)
-      table.insert(pixels[layer].data,1,l)
+      local l = table.remove(data,#data)
+      table.insert(data,1,l)
     elseif y < 0 then
-      local l = table.remove(pixels[layer].data,1)
-      table.insert(pixels[layer].data,l)
+      local l = table.remove(data,1)
+      table.insert(data,l)
     end
     if x > 0 then
-      for i,r in ipairs(pixels[layer].data) do
+      for i,r in ipairs(data) do
         local l = table.remove(r,#r)
         table.insert(r,1,l)
       end
     elseif x < 0 then
-      for i,r in ipairs(pixels[layer].data) do
+      for i,r in ipairs(data) do
         local l = table.remove(r,1)
         table.insert(r,l)
       end
     end
+    pixels[layer].data:set(table.iflatten(data))
     refresh()
   end
   ----------------------------------------------------------------------
@@ -431,18 +471,61 @@ function canvas.new(w,h,init)
       --win.scene"log".text = 'x: ' + mp.x + '- y: ' + mp.y 
       
       inner"line".thickness = 0
-      
-      if Cuts:down('colorpicker') then
+      inner"form".thickness = 0
+          
+      -- FORM MODE ================================================
+      if brush[1] == 'form' then
+        if mouse.left or mouse.right then
+          if win:mouse_pressed("left") or win:mouse_pressed("right") then last_id = index end
+          inner"form".point1 = positionFromIndex(last_id)
+          
+          local nvec = inner"form".point1 - positionFromIndex(index)
+          if win:key_down('lshift') then
+            local inv = math.abs(nvec.x)*math.value(nvec.y)
+            nvec = vec2(nvec.x,inv)
+          end
+          
+          inner"form".point2 = nvec*-1
+          inner"form".thickness = math.max(1,scale/2)
+          
+        end
+        if win:mouse_released('left') then
+          local c = Sprites.selected[1]
+          local target = index
+          if win:key_down('lshift') then
+            
+          end
+          if brush[2]=='squarefull' then
+            pixels[layer]:drawFullSquare(last_id,target,c)
+          else
+            pixels[layer]:drawLineSquare(last_id,target,c)
+          end
+          refresh()
+        end
+        if win:mouse_released('right') then
+          local c = Sprites.selected[2]
+          if brush[2]=='squarefull' then
+            pixels[layer]:drawFullSquare(last_id,index,c)
+          else
+            pixels[layer]:drawLineSquare(last_id,index,c)
+          end
+          refresh()
+        end
+      -- COLOR PICKER MODE ================================================
+      elseif Cuts:down('colorpicker') then
         if brush[1] == 'pencil' or
            brush[1] == 'brush' or
            brush[1] == 'eraser' or
            brush[1] == 'bucket' then
           if win:mouse_down("left") then
+            print('pick')
             pick_color(1)
           elseif win:mouse_down("right") then
             pick_color(2)
           end
         end
+        
+      -- LINE MODE ================================================
       elseif win:key_down('lshift') then
         if brush[1] == 'pencil' or
            brush[1] == 'brush' or
@@ -460,7 +543,7 @@ function canvas.new(w,h,init)
             draw_lineID(last_id,index,c)
           end
           if win:mouse_released('right') then
-            local c = (brush[1]=='eraser') and '.' or Sprites.selected[1]
+            local c = (brush[1]=='eraser') and '.' or Sprites.selected[2]
             --draw_line(last_id,mp,c)
             draw_lineID(last_id,index,c)
           end
@@ -468,6 +551,7 @@ function canvas.new(w,h,init)
         
         end
       else 
+      -- NORMAL MODE ================================================
         if brush[1] == 'pencil' then
           if mouse.left then --win:mouse_pressed("left") then
             scene.pixel = Sprites.selected[1]
@@ -539,6 +623,16 @@ function canvas.new(w,h,init)
         viewer.trigger()
     elseif Cuts:active('tiles') then
         trigger_tiles()
+    elseif Cuts:active('delete') then
+      emptyDrawing()
+    elseif Cuts:active('upperlayer') then
+      Layers:selectUpperLayer()
+    elseif Cuts:active('bottomlayer') then
+      Layers:selectBottomLayer()
+    elseif Cuts:active('visible') then
+      Layers:selectUpperLayer()
+    elseif Cuts:active('lock') then
+      Layers:selectBottomLayer()
     else
 --      if win:key_pressed('l') then
 --        addLayer()

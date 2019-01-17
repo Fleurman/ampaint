@@ -2,11 +2,11 @@ local Parser = ...
 
 Parser.valids = {
   window={'width','height'},
-  cuts= {'Save','Save As','Export','Export As','Center view','Color picker','Swap Color','Move','Pencil','Eraser','Bucket','Toggle  viewer','Toggle tiles','Undo','Redo','Delete All'}
+  cuts= {'Save','Save As','Export','Export As','Center view','Color Picker','Swap Color','Move','Pencil','Eraser','Bucket','Toggle  viewer','Toggle tiles','Undo','Redo','Delete','Upper Layer','Bottom Layer'}
 }
 Parser.keys = {
   window={'860','620'},
-  cuts={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','ctrl','alt','shift','left','right','up','down','enter','backspace','space'}
+  cuts={'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','ctrl','alt','shift','left','right','up','down','enter','backspace','space','delete','pageup','pagedown'}
 }
 
 local state = ''

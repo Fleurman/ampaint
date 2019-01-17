@@ -51,6 +51,11 @@ Toggle the image tilling by pressing the `t` key.
 Switch the front and back color by pressing `a` key.
 
 ---
+## Layers
+You can use up to 6 layers. You can move them up&down, hide or lock them.
+By right clicking on a layer, you can rename it.
+
+---
 ## Viewer
 You can change the background color of the viewer by clicking on it.
 

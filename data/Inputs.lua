@@ -1,11 +1,12 @@
-inputs = ...
+Inputs = ...
 
 --[[------------------------------------------------------------------------------
                                     **NAME**
 ----------------------------------------------------------------------------------]]
-function inputs.name(x,y,fn)
-  local text = #win.scene'canvas'.name > 0 and win.scene'canvas'.name or ''
-  local def = #win.scene'canvas'.name > 0 and '' or 'name'
+function Inputs.name(pos,args,fn)
+  local x,y = pos.x,pos.y
+  local text = args.default or ''
+  local placeholder = (not args.default) and args.placeholder or ''
   local nod = am.group():tag'name'
               ^ am.translate(0,0)
                 ^ {
@@ -16,7 +17,7 @@ function inputs.name(x,y,fn)
                     ^ am.text(text,vec4(0.3,0.3,0.3,1),'left')
                   , am.translate(x+5,y-25):tag('cursor') ^ am.rect(0,8,2,-8,vec4(0,0,0,1))
                   ,am.translate(x+10,y-25):tag'blank'
-                    ^ am.text(def,vec4(0.8,0.8,0.8,1),'left')
+                    ^ am.text(placeholder,vec4(0.8,0.8,0.8,1),'left')
                   ,GUI.sys_button(x+34,y-50,61,13,
                     Src.flatButton(),Src.gui.confirm.small,'',
                     function() doName() end)
@@ -76,7 +77,7 @@ end
 --[[------------------------------------------------------------------------------
                                   **DIMENSIONS**
 ----------------------------------------------------------------------------------]]
-function inputs.dimensions(x,y)
+function Inputs.dimensions(x,y)
   local texts = {'24','24'}
   local sel = 'x'
   local dim = {}
@@ -180,7 +181,7 @@ end
 --[[------------------------------------------------------------------------------
                                   **CHOICE**
 ----------------------------------------------------------------------------------]]
-function inputs.choice(x,y,texts,fn,limit)
+function Inputs.choice(x,y,texts,fn,limit)
   limit = limit or 15
   local item = 150
   local size = #texts

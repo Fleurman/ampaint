@@ -9,7 +9,7 @@ V 09
 
 ]]
 
-require 'Frame'
+require './data/Frame'
 
 --[[------------------------------------------------------------------------------
                                 **CIRCLE BUTTON**
@@ -789,19 +789,19 @@ end
 ----------------------------------------------------------------------------------]]
 function GUI.log(text,fn)
   local w,h = 600,20
-  local logs = #win.scene:all"logbox"
-  local x,y = 0,-165
-  local node = am.translate(x,y-40):tag"logbox" ^ am.group()
+  local logs = #win.scene:all"logbox" + 1
+  local sx,sy = 0,win.bottom-20
+  local node = am.translate(sx,sy):tag"logbox" ^ am.group()
                 ^ {am.read_uniform('MV'):tag('read'),
-                  am.rect(x-w/2,y-h/2,x+w/2,y+h/2,vec4(0.8,0.1,0.1,1)),
-                  am.translate(x,y) ^ am.scale(vec2(1)) ^ am.text(text,Color.white) }
+                  am.translate(-w/2,-h/2) ^ am.rect(0,0,w,h,vec4(0.8,0.2,0.1,1)),
+                  am.text(text,Color.whitesmoke) }
 
   node:action(coroutine.create(function(scene)
     while true do
-      am.wait(am.tween(scene'logbox',0.5, { y = -165+(logs*25) }))
+      am.wait(am.tween(scene'logbox',0.5, { y = sy+10+(logs*(h+5)) }))
       --scene.paused = true
       am.wait(am.delay(2))
-      am.wait(am.tween(scene'logbox',0.5, { y = -200 }))
+      am.wait(am.tween(scene'logbox',0.5, { y = sy }))
       win.scene:remove('logbox')
     end
   end))
