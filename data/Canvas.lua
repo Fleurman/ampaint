@@ -518,7 +518,7 @@ function canvas.new(w,h,init)
            brush[1] == 'eraser' or
            brush[1] == 'bucket' then
           if win:mouse_down("left") then
-            print('pick')
+            --print('pick')
             pick_color(1)
           elseif win:mouse_down("right") then
             pick_color(2)

@@ -120,6 +120,10 @@ function Inputs.dimensions(x,y)
       win.scene"here":append(Canvas.new(dim[1],dim[2]))
       win.scene:replace('view',viewer.node(win.scene'canvas'.dim))
       init_tools()
+      Sprites.selected[1] = 'F'
+      win.scene"selected1".color = am.ascii_color_map['F']
+      Sprites.selected[2] = 'A'
+      win.scene"selected2".color = am.ascii_color_map['A']
       onSys = false
       win.scene:remove('dimensions')
     end

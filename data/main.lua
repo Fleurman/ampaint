@@ -4,7 +4,7 @@ EXPORT = not io.open('am.paint.exe')
 ROOT = ''
 if EXPORT then ROOT = './../' end
 
-VERSION = '0.08.5'
+VERSION = '0.08.7'
 
 CONFIG = {
   window={
@@ -21,7 +21,7 @@ Parser = require "./data/Parser"
                               **WINDOW CREATION**
 ----------------------------------------------------------------------------------]]
 win = am.window{
-    title = "Am.Paint v0.08.5",
+    title = "Am.Paint v"..VERSION,
     width = CONFIG.window.width,
     height = CONFIG.window.height,
     mode = CONFIG.window.mode,

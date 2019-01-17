@@ -136,6 +136,34 @@ function loadOld(data)
   --menu:autoSave(data.name..'_new')
 end
 
+function load0_8_5(data)
+  win.scene'create'.hidden = true
+  if win.scene'canvas' then
+    win.scene'here':remove('canvas')
+  end
+  local pixels = {}
+  for i=1,#data.table do
+    table.insert(pixels,OLayer:create(data.dim.x,data.dim.y,data.table[i]))
+  end
+  win.scene"here":append(Canvas.new(data.dim.x,data.dim.y,pixels))
+  Layers:init(data.table)
+  Layers:open((data.layerOpen))
+  Palette:set(data.palette)
+  Sprites.selected = data.colors
+  win.scene"colors""selected1".color = am.ascii_color_map[Sprites.selected[1]]
+  win.scene"colors""selected2".color = am.ascii_color_map[Sprites.selected[2]]
+  viewer.load(data.view.color,data.view.state)
+  win.scene"canvas":redraw()
+  win.scene"canvas".layer = data.layer
+  win.scene"canvas".undos = data.undos
+  win.scene"canvas".name = data.name
+  win.scene"canvas".brush = data.tool
+  if data.icsels then icons.sels = data.icsels end
+  local tool = type(data.tool[1]) == "table" and data.tool[1][1] or data.tool[1]
+  select_tool(tool)
+  win.scene:append( GUI.log('Loaded \'' .. data.name .. '.ampt\'') )
+end
+
 --[[------------------------------------------------------------------------------
                                 **LOAD A PROJECT**
 ----------------------------------------------------------------------------------]]
@@ -146,35 +174,18 @@ function load_proj(name)
   f:close()
   local data = am.parse_json(raw)
   
-  if isOld(data.version,VERSION) then
+  if not data.version then
+    --print('LOAD VERY OLD')
     data.name = data.name or name
     loadOld(data)
+--  elseif isOld(data.version,"0.8.7") then
+--    print('LOAD OLD', data.version)
+--    data.name = data.name or name
+--    load0_8_5(data)
   else
-    win.scene'create'.hidden = true
-    if win.scene'canvas' then
-      win.scene'here':remove('canvas')
-    end
-    local pixels = {}
-    for i=1,#data.table do
-      table.insert(pixels,OLayer:create(data.dim.x,data.dim.y,data.table[i]))
-    end
-    win.scene"here":append(Canvas.new(data.dim.x,data.dim.y,pixels))
-    Layers:init(data.table)
-    Layers:open((data.layerOpen))
-    Palette:set(data.palette)
-    Sprites.selected = data.colors
-    win.scene"colors""selected1".color = am.ascii_color_map[Sprites.selected[1]]
-    win.scene"colors""selected2".color = am.ascii_color_map[Sprites.selected[2]]
-    viewer.load(data.view.color,data.view.state)
-    win.scene"canvas":redraw()
-    win.scene"canvas".layer = data.layer
-    win.scene"canvas".undos = data.undos
-    win.scene"canvas".name = name
-    win.scene"canvas".brush = data.tool
-    if data.icsels then icons.sels = data.icsels end
-    local tool = type(data.tool[1]) == "table" and data.tool[1][1] or data.tool[1]
-    select_tool(tool)
-    win.scene:append( GUI.log('Loaded \'' .. name .. '.ampt\'') )
+    --print('LOAD NEW', VERSION)
+    data.name = data.name or name
+    load0_8_5(data)
   end
 end
 

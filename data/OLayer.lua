@@ -23,7 +23,7 @@ function OLayer:create(w,h,t)
   o.visible = t.visible
   o.locked = t.locked
   o.name = t.name
-  --print(table.tostring(t.data))
+  --print('CREATE',table.tostring(t.data))
   o.data = am.ubyte_array(t.data)
   return o
 end
