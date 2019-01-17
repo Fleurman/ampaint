@@ -1,4 +1,4 @@
-# Am.Paint (v0.08.5)
+# Am.Paint (v0.08.7)
 
 ---
 ## Menu
@@ -52,8 +52,9 @@ Switch the front and back color by pressing `a` key.
 
 ---
 ## Layers
-You can use up to 6 layers. You can move them up&down, hide or lock them.
-By right clicking on a layer, you can rename it.
+You can use up to 6 layers. 
+- You can move them up&down, hide or lock them.
+- By right clicking on a layer, you can rename it.
 
 ---
 ## Viewer
