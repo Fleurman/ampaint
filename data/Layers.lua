@@ -18,7 +18,7 @@ local function layerNode(i,args)
   local node = am.group() ^ {
                   am.read_uniform('MV'):tag('read'),
                   am.translate(8,-16)^am.group()^{
-                    am.translate(-20,0)^am.text(name,Color.black,'left')
+                    am.translate(-30,0)^am.text(name,Color.black,'left')
                   }
                 }
   local frame = am.rect(-92,-34,72,2,vec4(0.2,0.2,0.2,1))
@@ -28,6 +28,7 @@ local function layerNode(i,args)
   wrapped:append(am.rect(-90,-32,70,0,vec4(0.8,0.8,0.8,1)):tag('back'))
   
   function triggerShow(n,id,v)
+--    print('trigger show',id)
     bt = n'show'
     n.visible = v or (not n.visible)
     win.scene'canvas'.datas()[id].visible = n.visible
@@ -81,6 +82,12 @@ local function layerNode(i,args)
   function wrapped:get_visible()
     return visible
   end
+  function wrapped:set_locked(v)
+    locked = v
+  end
+  function wrapped:get_locked()
+    return locked
+  end
   function wrapped:set_name(v)
     name = v
     node'text'.text = v
@@ -89,6 +96,7 @@ local function layerNode(i,args)
     return name
   end
   function wrapped.rename(n)
+    if(n=='')then return end
     wrapped:set_name(n)
     win.scene'canvas'.datas()[id].name = n
   end
@@ -149,6 +157,38 @@ function Layers:addLayer()
   Layers.bank:append(am.translate(0,y+260)^layerNode(i+1))
   Layers.count = Layers.count + 1
   Layers:selectLayer(i+1)
+end
+
+function Layers:duplicateLayer(layer)
+  
+  local sel = Layers.selected
+  local id = Layers.bank.num_children
+  
+  local childs = {};
+  
+  for i,c in Layers.bank:child_pairs() do
+--    print('insert',i,c)
+    table.insert(childs,c)
+  end
+  for i,c in ipairs(childs) do
+--    print('remove',i,c)
+    Layers.bank:remove(c)
+  end
+  
+  table.insert(childs,sel+1,am.translate(0,260)^layerNode(id,layer))
+  
+  for i,c in ipairs(childs) do
+    Layers.bank:append(c)
+--    print(i,c)
+  end
+  
+--  print('children count',Layers.bank.num_children)
+  
+  Layers:refresh()
+  
+  Layers.count = Layers.count + 1
+  Layers:selectLayer(sel+1)
+  
 end
 
 function Layers:refresh()
@@ -233,19 +273,24 @@ function Layers.node(arg)
                   --^ am.group():tag('layers')^{ },
                   open,scroll}
   node'layerwin''tl':append(Layers.bank)
-  local bt = am.translate(-40,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.arrows.up.medium,
+  local bt = am.translate(-72,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.arrows.up.medium,
     function()
       if win.scene'canvas' then win.scene'canvas'.moveLayerUp() end
     end)
   node:append(bt)
-  bt = am.translate(-8,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.arrows.down.medium,
+  bt = am.translate(-40,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.arrows.down.medium,
     function()
       if win.scene'canvas' then win.scene'canvas'.moveLayerDown() end
     end)
   node:append(bt)
-  bt = am.translate(24,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.layers.new,
+  bt = am.translate(-8,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.layers.new,
     function()
       if win.scene'canvas' then win.scene'canvas'.addLayer() end
+    end)
+  node:append(bt)
+  bt = am.translate(24,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.layers.duplicate,
+    function()
+      if win.scene'canvas' then win.scene'canvas'.duplicateLayer() end
     end)
   node:append(bt)
   bt = am.translate(56,-134)^GUI.imgbutton(1,1,Src.smallButton(),Src.dustbin.delete,

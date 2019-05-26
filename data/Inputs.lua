@@ -52,6 +52,7 @@ function Inputs.name(pos,args,fn)
         local touches = win:keys_down()
         for i,v in ipairs(touches) do
           if win:key_pressed(v) then
+            v = Keymap:get(v)
             if v == 'backspace' and
                string.len(text) > 0 then
               text = string.sub(text,1,string.len(text)-1)

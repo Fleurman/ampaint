@@ -1,4 +1,0 @@
-SNES
-tv
-full
-gray

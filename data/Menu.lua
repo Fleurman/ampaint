@@ -57,12 +57,6 @@ function save_proj(name)
   local f = io.open('Saves/' .. name .. '.ampt','w+')
   f:write(js)
   f:close()
---  local record = io.open('Saves/Files.txt','a+')
---  local names = record:read '*a'
---  local new = names:find(name .. "\n")
---  new = names:find(name)
---  if new then else record:write("\n" .. name) end
---  record:close()
   win.scene:append( GUI.log('Saved as \'' .. name .. '.ampt\'') )
   
 end
@@ -77,8 +71,6 @@ function verifyFiles()
   local list = {}
   local lyns = list_to_t(names)
   for i=1,#lyns do
-  --print(table.tostring(names))
---print(lyns[i])
     if list[lyns[i]] then else
       if io.open('Saves/' .. lyns[i] .. '.ampt','r') then
         nstr = nstr .. lyns[i]
@@ -94,7 +86,6 @@ function verifyFiles()
   end
   record:close()
 end
---verifyFiles()
 
 function loadOld(data)
   data.name = data.name or getName()
@@ -103,7 +94,6 @@ function loadOld(data)
     win.scene'here':remove('canvas')
   end
   local buff = table.map(table.iflatten(Palette:transformOldNes(data.table)),function(v) return string.byte(v) end)
-  --print(table.tostring(buff))
   local LayerData = {
     visible= true,
     locked= false,
@@ -122,7 +112,6 @@ function loadOld(data)
   win.scene"colors""selected2".color = am.ascii_color_map[Sprites.selected[2]]
   viewer.load(data.view.color,data.view.state)
   win.scene"canvas":redraw()
-  --win.scene"canvas".undos = data.undos
   win.scene"canvas".name = data.name .. '_new'
   win.scene"canvas".brush = data.tool
   data.icsels = data.icsels or {}
@@ -133,7 +122,6 @@ function loadOld(data)
   local tool = type(data.tool[1]) == "table" and data.tool[1][1] or data.tool[1]
   select_tool(tool)
   win.scene:append( GUI.log('Loaded \'' .. data.name .. '.ampt\' in compatibility mode') )
-  --menu:autoSave(data.name..'_new')
 end
 
 function load0_8_5(data)
@@ -175,15 +163,9 @@ function load_proj(name)
   local data = am.parse_json(raw)
   
   if not data.version then
-    --print('LOAD VERY OLD')
     data.name = data.name or name
     loadOld(data)
---  elseif isOld(data.version,"0.8.7") then
---    print('LOAD OLD', data.version)
---    data.name = data.name or name
---    load0_8_5(data)
   else
-    --print('LOAD NEW', VERSION)
     data.name = data.name or name
     load0_8_5(data)
   end
@@ -277,8 +259,8 @@ function menu.node()
                                     }
                                   win.scene:append(Inputs.name(pos,args,export))
                                 end
-                              end),
-                GUI.imgbutton(win.left+116,win.top-16,
+                              end)
+                --[[ ,GUI.imgbutton(win.left+116,win.top-16,
                               {normal=Src.buttons.small.normal,
                                hover=Src.buttons.small.hover,
                                active=Src.buttons.small.active},
@@ -292,7 +274,7 @@ function menu.node()
                                     }
                                     win.scene:append(Inputs.name(pos,args,save_txt))
                                 end
-                              end)
+                              end) ]]
                             }
 
   nod:action(function()
@@ -300,13 +282,13 @@ function menu.node()
         if nod:all('imgbutton')[3].active then
           nod:all('imgbutton')[3].active = false
           nod:all('imgbutton')[4].active = false
-          nod:all('imgbutton')[5].active = false
+          --nod:all('imgbutton')[5].active = false
         end
       else
         if not nod:all('imgbutton')[3].active then
           nod:all('imgbutton')[3].active = true
           nod:all('imgbutton')[4].active = true
-          nod:all('imgbutton')[5].active = true
+          --nod:all('imgbutton')[5].active = true
         end
       end
   end)

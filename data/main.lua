@@ -4,17 +4,18 @@ EXPORT = not io.open('am.paint.exe')
 ROOT = ''
 if EXPORT then ROOT = './../' end
 
-VERSION = '0.08.7'
+VERSION = '0.08.9'
 
 CONFIG = {
   window={
     width=1080,
-    height=680,
+    height=720,
     mode='windowed',
-    resizable=false
+    resizable=false,
   }
 }
 Cuts = require "./data/Shortcuts"
+Keymap = require "./data/Keymap"
 Parser = require "./data/Parser"
 
 --[[------------------------------------------------------------------------------
@@ -26,8 +27,8 @@ win = am.window{
     height = CONFIG.window.height,
     mode = CONFIG.window.mode,
     resizable = CONFIG.window.resizable,
-    --borderless=true,
-    --letterbox = false
+    letterbox = false,
+    stencil_buffer = true,
 }
 --[[------------------------------------------------------------------------------
                               **GLOBAL VARIABLES**
@@ -78,5 +79,7 @@ win.scene = am.group()
               , Viewer.node()
               , Layers.node()
               , am.translate(-280,150)
-                ^ am.text("log",vec4(1,1,1,0)):tag"log"
+                ^ am.text("",vec4(1,1,1,1)):tag"log"
             }
+            
+            

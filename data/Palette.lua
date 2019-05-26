@@ -75,7 +75,7 @@ function Palette.node()
                   am.scale(scale)
                    ^ am.sprite(Sprites.palette):tag('palette_spr')
                   ,
-                  am.square(0,0,scale,scale,1,Color.white)
+                  am.cursor(0,0,scale,scale,1,Color.white)
                   --, am.text('log'):tag'log'
                   }
 

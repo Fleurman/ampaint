@@ -26,6 +26,7 @@ function Cuts:active(key)
   local bool = true
   for k,v in ipairs(self.data[key]) do
     if #win:keys_down() > #self.data[key] then bool=nil return end
+    v = Keymap:get(v)
     if v=='ctrl' or v=='alt' or v=='shift' then
       if win:key_down('l' ..v) or win:key_down('r' ..v) then else bool=nil end
     else
@@ -39,6 +40,7 @@ function Cuts:down(k)
   if not self.data[k] then return nil end
   local bool = true
   for k,v in ipairs(self.data[k]) do
+    v = Keymap:get(v)
     if v=='ctrl' or v=='alt' or v=='shift' then
       if win:key_down('l' ..v) or win:key_down('r' ..v) then else bool=nil end
     else

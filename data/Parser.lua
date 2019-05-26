@@ -2,7 +2,7 @@ local Parser = ...
 
 Parser.valids = {
   window={'width','height'},
-  cuts= {'Save','Save As','Export','Export As','Center view','Color Picker','Swap Color','Move','Pencil','Eraser','Bucket','Toggle  viewer','Toggle tiles','Undo','Redo','Delete','Upper Layer','Bottom Layer'}
+  cuts= {'save','save as','export','export as','center view','color picker','swap color','move','pencil','eraser','bucket','shapes','toggle viewer','toggle tiles','undo','redo','delete','upper layer','bottom layer','new layer','duplicate layer',}
 }
 Parser.keys = {
   window={'860','620'},
@@ -34,7 +34,8 @@ function Parser:parseINI(t)
     local id,id2,k,v = string.find(t,'([^=]+)=(.+)')
     if id then
       k,v = trim(k),trim(v)
-      if (validWindowINIkey(k)) then
+      k = string.lower(k)
+      if (validKeymapINIkey(k)) then
         if k=='width' then
           if v and type(tonumber(v)) == 'number' then
             local w = tonumber(v)
@@ -64,7 +65,7 @@ function Parser:parseINI(t)
   elseif state == 'shortcuts' then
     local id,id2,k,v1,v2,v3 = string.find(t,'([^=]+)%s+=%s*(%a+)+?([^+]*)+?([^+]*)')
     if id then
-    --print('shortcut:',id,id2,k,v1,v2,v3)
+      k = string.lower(k)
       if validShortcutsINIkey(k) then
         if #v1 > 0 then if validShortcutsINIvalue(v1) then table.insert(values,v1) else invalid=true end end
         if #v2 > 0 then if validShortcutsINIvalue(v2) then table.insert(values,v2) else invalid=true end end
@@ -76,10 +77,21 @@ function Parser:parseINI(t)
         end
       end
     end
+  elseif state == 'keymap' then
+    local id,id2,k,v = string.find(t,'([^=]+)=(.+)')
+    if id then
+      k,v = trim(k),trim(v)
+      if (validKeymapINIkey(k) and validKeymapINIkey(v)) then
+          Keymap.data[k] = v
+      end
+    end
+    
   end
 end
 
-function validWindowINIkey(t) if table.search(Parser.valids.window,t) then return true else return false end end
+function validKeymapINIkey(t) if table.search(Parser.valids.window,t) then return true else return false end end
+
+function validKeymapINIkey(t) if table.search(Parser.keys.cuts,t) then return true else return false end end
 
 function validShortcutsINIkey(t) if table.search(Parser.valids.cuts,t) then return true else return false end end
 function validShortcutsINIvalue(t) if table.search(Parser.keys.cuts,t) then return true else return false end end

@@ -3,8 +3,9 @@ icons = ...
 icons.sels = {}
 
 function init_tools()
---  select_spec('norm','sbucket')
---  select_spec('norm','seraser')
+  select_spec('square','sform')
+  select_spec('norm','sbucket')
+  select_spec('norm','seraser')
   select_spec('norm','spencil')
   select_tool('pencil')
 end
@@ -89,8 +90,8 @@ function icons.node()
   gb.hidden = true
   
   local gb = am.group():tag('sform')
-  list = {'square','squarefull'}
-  for i=1,2 do
+  list = {'square','squarefull','circle','circlefull'}
+  for i=1,4 do
     gb:append(spe(Src.specs[list[i]],list[i],'sform',x-7-(i*24),y-105,vec4(0.9,0.8,0.5,1)))
   end
   nod'specs':append(gb)

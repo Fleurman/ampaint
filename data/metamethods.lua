@@ -46,11 +46,43 @@ string.toNumber = function(s)
   return new
 end
 
+math.clamp = function(v,min,max)
+  return math.max(min,math.min(max,v))
+end
+math.truncate = function(v,d)
+  if(d)then v = v*(10^d) end
+  local t = tostring(v):gsub('%..+','')
+  v = tonumber(t)
+  if(d)then v = v/(10^d) end
+  return v
+end
+math.round = function(v,d)
+    v = v*(10^d)
+    local r = tostring( math.truncate(v*10) )
+    r = tonumber(r:sub(#r,#r))
+    if r < 5 then
+      v = math.floor(v) / (10^d)
+    else
+      v = math.ceil(v) / (10^d)
+    end
+    return v
+end
+
+
+math.ellipsePerimeter = function(a,b)
+  return math.pi * math.sqrt( 2*(a^2+b^2) - (a-b)^2 )
+end
 
 io.exists = function(file)
   return io.open(file) and true or false
 end
 
+table.usort = function( t )
+  local sorted = {}
+  for k,v in pairs(t) do
+    
+  end
+end
 table.map = function( tab, fn )
     for i,v in ipairs(tab) do
         tab[i] = fn(v)

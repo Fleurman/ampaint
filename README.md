@@ -1,4 +1,4 @@
-# Am.Paint (v0.08.7)
+# Am.Paint (v0.08.5)
 
 ---
 ## Menu
@@ -31,9 +31,13 @@ Draw a pixel in 3 sizes
 Erase a pixel in 3 sizes
 
 #### ![bucket_icon](icons/bucket.png) Bucket
-- Fill contiguneous of pixels
-- Erase contiguneous of pixels
+- Fill contiguneous pixels
+- Erase contiguneous pixels
 - Fill all pixels by color
+
+#### ![shapes_icon](icons/shapes.png) Shapes
+- Draws lined or full ellipse
+- Draws lined or full rectangle
 
 #### Move
 By pressing `m + arrow` key you can move the content of the current layer.
@@ -49,12 +53,6 @@ Toggle the image tilling by pressing the `t` key.
 
 #### Color Swap
 Switch the front and back color by pressing `a` key.
-
----
-## Layers
-You can use up to 6 layers. 
-- You can move them up&down, hide or lock them.
-- By right clicking on a layer, you can rename it.
 
 ---
 ## Viewer
